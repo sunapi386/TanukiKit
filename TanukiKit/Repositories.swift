@@ -36,16 +36,16 @@ public extension TanukiKit {
      - parameter perPage: Number of repositories per page. `100` by default.
      - parameter completion: Callback for the outcome of the fetch.
      */
-    public func repositories(session: RequestKitURLSession = NSURLSession.sharedSession(), page: String = "1", perPage: String = "100", completion: (response: Response<[Repository]>) -> Void) {
-        let router = RepositoryRouter.ReadAuthenticatedRepositories(configuration, page, perPage)
+    public func repositories(_ session: RequestKitURLSession = URLSession.shared(), page: String = "1", perPage: String = "100", completion: (response: Response<[Repository]>) -> Void) {
+        let router = RepositoryRouter.readAuthenticatedRepositories(configuration, page, perPage)
         router.loadJSON(session, expectedResultType: [[String: AnyObject]].self) { json, error in
             if let error = error {
-                completion(response: Response.Failure(error))
+                completion(response: Response.failure(error))
             }
 
             if let json = json {
                 let repos = json.map { Repository($0) }
-                completion(response: Response.Success(repos))
+                completion(response: Response.success(repos))
             }
         }
     }
@@ -54,11 +54,11 @@ public extension TanukiKit {
 // MARK: Router
 
 enum RepositoryRouter: Router {
-    case ReadAuthenticatedRepositories(Configuration, String, String)
+    case readAuthenticatedRepositories(Configuration, String, String)
 
     var configuration: Configuration {
         switch self {
-        case .ReadAuthenticatedRepositories(let config, _, _): return config
+        case .readAuthenticatedRepositories(let config, _, _): return config
         }
     }
 
@@ -67,19 +67,19 @@ enum RepositoryRouter: Router {
     }
 
     var encoding: HTTPEncoding {
-        return .URL
+        return .url
     }
 
     var params: [String: AnyObject] {
         switch self {
-        case .ReadAuthenticatedRepositories(_, let page, let perPage):
+        case .readAuthenticatedRepositories(_, let page, let perPage):
             return ["per_page": perPage, "page": page]
         }
     }
 
     var path: String {
         switch self {
-        case .ReadAuthenticatedRepositories:
+        case .readAuthenticatedRepositories:
             return "/projects"
         }
     }
